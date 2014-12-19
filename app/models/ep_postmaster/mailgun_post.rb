@@ -2,7 +2,7 @@ require "openssl"
 
 module EpPostmaster
   class MailgunPost
-    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :sender, :signature, :timestamp, :token
+    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :sender, :subject, :signature, :timestamp, :token
     
     def initialize(params)
       @message_id = params["message-id"]
@@ -13,7 +13,8 @@ module EpPostmaster
       @error = params["error"]
       @event = params["event"]
       @recipient = params.fetch("recipient")
-      @sender = find_sender(params["message-headers"])
+      @sender = find_sender
+      @subject = find_subject
       @signature = params["signature"]
       @timestamp = params["timestamp"]
       @token = params["token"]
@@ -21,12 +22,16 @@ module EpPostmaster
       raise EpPostmaster::ParameterMissing, e.message
     end
 
+    def self.sign(timestamp, token, api_key)
+      digest = OpenSSL::Digest::SHA256.new
+      data = [timestamp, token].join
+      OpenSSL::HMAC.hexdigest(digest, api_key, data)
+    end
+
     # Verifies that the post came from Mailgun
     # Taken from http://documentation.mailgun.com/user_manual.html#webhooks
     def authentic?
-      digest = OpenSSL::Digest::SHA256.new
-      data = [timestamp, token].join
-      signature == OpenSSL::HMAC.hexdigest(digest, api_key, data)
+      signature == self.class.sign(timestamp, token, api_key)
     end
     
     def bounced_email?
@@ -39,8 +44,12 @@ module EpPostmaster
 
   private
 
-    def find_sender(headers)
+    def find_sender
       message_headers.select { |header| header[0] == "From" }.first[1]
+    end
+    
+    def find_subject
+      message_headers.select { |header| header[0] == "Subject" }.first[1]
     end
   
   end

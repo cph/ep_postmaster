@@ -3,11 +3,11 @@ ENV["RAILS_ENV"] = "test"
 
 require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 require "rails/test_help"
+require File.expand_path("../../lib/ep_postmaster/dummy_params.rb",  __FILE__)
 require "rr"
-require "shoulda/context"
 require "pry"
+require "shoulda/context"
 require "turn"
-
 Rails.backtrace_cleaner.remove_silencers!
 
 # Load support files
@@ -25,10 +25,7 @@ class ActiveSupport::TestCase
   
   setup do
     @mailgun_posts = {}.tap do |posts| 
-      Dir.glob("test/mailgun_posts/**/*.yml").each do |post|
-        key = File.basename(post, ".yml").parameterize("_").to_sym
-        posts[key] = YAML::load(File.open(post))
-      end
+      posts[:bounced_email] = EpPostmaster::DummyParams.new(from: "sender@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
     end
   end
   

@@ -6,9 +6,6 @@ module EpPostmaster
   
     setup do
       @mailgun_post = MailgunPost.new(mailgun_posts[:bounced_email])
-      EpPostmaster.configure do |config|
-        config.mailgun_api_key = "key-abc123"
-      end
     end
   
     should "get the recipient's email address" do
@@ -17,6 +14,10 @@ module EpPostmaster
   
     should "get the sender's email address from the message headers" do
       assert_equal "sender@test.test", mailgun_post.sender
+    end
+    
+    should "get the subject from the message headers" do
+      assert_equal "Original email subject", mailgun_post.subject
     end
   
     should "get the status code" do
