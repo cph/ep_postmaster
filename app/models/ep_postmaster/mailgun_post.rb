@@ -2,7 +2,7 @@ require "openssl"
 
 module EpPostmaster
   class MailgunPost
-    attr_reader :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :sender, :signature, :timestamp, :token
+    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :sender, :signature, :timestamp, :token
     
     def initialize(params)
       @message_id = params["message-id"]
@@ -17,6 +17,8 @@ module EpPostmaster
       @signature = params["signature"]
       @timestamp = params["timestamp"]
       @token = params["token"]
+    rescue ActionController::ParameterMissing => e
+      raise EpPostmaster::ParameterMissing, e.message
     end
 
     # Verifies that the post came from Mailgun
@@ -28,7 +30,7 @@ module EpPostmaster
     end
     
     def bounced_email?
-      sender.present? && recipient.present? && code == "550"
+      /^5\d{2}$/ =~ code
     end
     
     def api_key

@@ -31,8 +31,13 @@ module EpPostmaster
       assert mailgun_post.authentic?
     end
   
-    should "verify the post is a bounced email notification by checking the error number and the presence of a sender and recipient" do
+    should "verify the post is a bounced email notification by checking the error number" do
+      # Anything 5xx error code is considered a hard bounce
       assert mailgun_post.bounced_email?
+      mailgun_post.code = "501"
+      assert mailgun_post.bounced_email?
+      mailgun_post.code = "450"
+      refute mailgun_post.bounced_email?
     end
   
   end

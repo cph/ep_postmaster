@@ -11,8 +11,13 @@ module EpPostmaster
     end
     
     should "return a 406 if the status code is not a bounce" do
+      # An example of pointing a Mailgun hook toward the wrong endpoint
       mailgun_post = mailgun_posts[:bounced_email]
-      mailgun_post["code"] = 501
+      mailgun_post["code"] = 250
+      mailgun_post["event"] = "Completed"
+      any_instance_of(MailgunHooksController) do |controller|
+        mock(controller).notify_airbrake(anything) { true }
+      end
       post "mailgun/bounced_email", mailgun_post
       assert_response :not_acceptable # 406
     end

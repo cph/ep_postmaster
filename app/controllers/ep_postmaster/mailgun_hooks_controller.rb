@@ -10,6 +10,9 @@ module EpPostmaster
         call_bounced_email_handler
         render nothing: true, status: 200
       else
+        if respond_to?(:notify_airbrake)
+          notify_airbrake WrongEndpointError.new "Expected a hard bounce error code 5xx (bounced), instead got #{mailgun_post.code} (#{mailgun_post.event})"
+        end
         render nothing: true, status: 406 # Mailgun won't retry request if it receives a 406
       end
     end
