@@ -5,7 +5,7 @@ module EpPostmaster
     def initialize
       @mailgun_api_key = ""
       self.bounced_email_handler = Class.new do
-        def self.handle_bounced_email(*)
+        def self.handle_bounced_email!(*)
           # noop
         end
       end

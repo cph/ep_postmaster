@@ -47,14 +47,14 @@ EpPostmaster.configure do |config|
 end
 ```
 
-Then, on the EmailAddress class, define a class level method called `handle_bounced_email`. This method should accept two arguments: the recipient that bounced back, and the MailgunPost object with all params sent back from Mailgun.
+Then, on the EmailAddress class, define a class level method called `handle_bounced_email!`. This method should accept two arguments: the recipient that bounced back, and the MailgunPost object with all params sent back from Mailgun.
 
 Example:
 
 ```
 class EmailAddress
 ...
-  def self.handle_bounced_email(email, mailgun_post)
+  def self.handle_bounced_email!(email, mailgun_post)
     find_by(address: email).update_attribute(:undeliverable, true)
   end
 ...

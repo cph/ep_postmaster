@@ -18,9 +18,9 @@ module EpPostmaster
     end
   
     should "email a notice to the sender and return a 200" do
-      handler = Class.new { def self.handle_bounced_email(*); end }
+      handler = Class.new { def self.handle_bounced_email!(*); end }
       EpPostmaster.configure { |config| config.bounced_email_handler = handler }
-      mock(handler).handle_bounced_email(anything, anything)
+      mock(handler).handle_bounced_email!(anything, anything)
       post "/mailgun/bounced_email", mailgun_posts[:bounced_email]
       assert_equal "Could not deliver email to doesntexist@test.test", ActionMailer::Base.deliveries.first.subject
     end

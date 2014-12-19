@@ -23,10 +23,10 @@ module EpPostmaster
     
     def call_bounced_email_handler
       handler = EpPostmaster.configuration.bounced_email_handler
-      if handler.respond_to?(:handle_bounced_email)
-        handler.send(:handle_bounced_email, mailgun_post.recipient, mailgun_post)
+      if handler.respond_to?(:handle_bounced_email!)
+        handler.send(:handle_bounced_email!, mailgun_post.recipient, mailgun_post)
       else
-        raise RuntimeError, "Expected #{handler} to define a method: handle_bounced_email"
+        raise RuntimeError, "Expected #{handler} to define a method: handle_bounced_email!"
       end
     end
     
