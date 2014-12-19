@@ -23,7 +23,7 @@ end
 
 #### Overriding Default Mail Views
 
-To override the mailer view, just drop the view in the `/views/ep_postmaster/postmaster/bounced_email.txt.erb`
+To override the mailer view, just create a file at `/views/ep_postmaster/postmaster/bounced_email.txt.erb`
 
 You'll have access to an instance variable named `@bounced_email` which is an instance of `MailgunPost`.
 
@@ -37,7 +37,7 @@ It has the following attributes:
 
 ### Additional options when a Bounced Email comes in
 
-In your `/config/initializers/ep_postmaster.rb` file, you can specify an object or class that will handle the bounced_email notice after the email has been sent. To do that, set the `bounced_email_handler` param:
+In your `/config/initializers/ep_postmaster.rb` file, you can specify an object or class that will handle the bounced email notice after the notification has been sent. To do that, set the `bounced_email_handler` param:
 
 ```
 EpPostmaster.configure do |config|
@@ -48,3 +48,15 @@ end
 ```
 
 Then, on the EmailAddress class, define a class level method called `handle_bounced_email`. This method should accept two arguments: the recipient that bounced back, and the MailgunPost object with all params sent back from Mailgun.
+
+Example:
+
+```
+class EmailAddress
+...
+  def self.handle_bounced_email(email, mailgun_post)
+    find_by(address: email).update_attribute(:undeliverable, true)
+  end
+...
+end
+```
