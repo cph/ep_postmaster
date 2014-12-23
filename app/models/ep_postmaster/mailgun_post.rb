@@ -31,6 +31,7 @@ module EpPostmaster
     # Verifies that the post came from Mailgun
     # Taken from http://documentation.mailgun.com/user_manual.html#webhooks
     def authentic?
+      raise ApiKeyMissing if api_key.nil?
       signature == self.class.sign(timestamp, token, api_key)
     end
     
