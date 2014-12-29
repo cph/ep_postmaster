@@ -1,5 +1,5 @@
 module EpPostmaster
-  class MailgunHooksController < ApplicationController
+  class MailgunHooksController < ActionController::Base
     attr_accessor :mailgun_post
     
     before_filter :authenticate_request!, except: :test
