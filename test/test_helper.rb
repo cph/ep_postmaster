@@ -25,7 +25,7 @@ class ActiveSupport::TestCase
   
   setup do
     @mailgun_posts = {}.tap do |posts| 
-      posts[:bounced_email] = EpPostmaster::DummyParams.new(from: "sender@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
+      posts[:bounced_email] = EpPostmaster::DummyParams.new(from: "automail@test.test", reply_to: "sender@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
     end
   end
   

@@ -46,7 +46,9 @@ module EpPostmaster
   private
 
     def find_sender
-      message_headers.select { |header| header[0] == "From" }.first[1]
+      reply_to = message_headers.select { |header| header[0] == "Reply-To" }.first
+      from = message_headers.select { |header| header[0] == "From" }.first
+      (reply_to || from)[1]
     end
     
     def find_subject

@@ -2,7 +2,7 @@ require "securerandom"
 
 module EpPostmaster
   class DummyParams
-    attr_accessor :__event, :to, :from, :mailgun_api_key, :subject
+    attr_accessor :__event, :to, :from, :reply_to, :mailgun_api_key, :subject
     
     class UnknownEvent < ArgumentError; end
     
@@ -14,6 +14,7 @@ module EpPostmaster
       @__event = options.fetch(:event)
       @to = options.fetch(:to)
       @from = options.fetch(:from)
+      @reply_to = options[:reply_to]
       @mailgun_api_key = options.fetch(:mailgun_api_key)
       @subject = options.fetch(:subject, "Original email subject")
       unless MAILGUN_EVENTS.has_key?(__event)
@@ -65,7 +66,8 @@ module EpPostmaster
     end
     
     def message_headers
-      "[[\"Received\", \"from #{domain} by mxa.mailgun.org with ESMTP id 54903636.7fe3701e8650-in2; #{date.httpdate}\"], [\"Date\", \"#{date.httpdate}\"], [\"From\", \"#{from}\"], [\"To\", \"#{to}\"], [\"Message-Id\", \"<#{message_id}>\"], [\"Subject\", \"#{subject}\"], [\"Mime-Version\", \"1.0\"], [\"Content-Type\", [\"text/plain\", {\"charset\": \"UTF-8\"}]], [\"Content-Transfer-Encoding\", [\"7bit\", {}]], [\"X-Mailgun-Sid\", \"#{x_mailgun_sid}\"], [\"Sender\", \"#{from}\"]]"
+      reply_to_json = reply_to ? "[\"Reply-To\", \"#{reply_to}\"]," : ""
+      "[[\"Received\", \"from #{domain} by mxa.mailgun.org with ESMTP id 54903636.7fe3701e8650-in2; #{date.httpdate}\"], [\"Date\", \"#{date.httpdate}\"], [\"From\", \"#{from}\"], #{reply_to_json} [\"To\", \"#{to}\"], [\"Message-Id\", \"<#{message_id}>\"], [\"Subject\", \"#{subject}\"], [\"Mime-Version\", \"1.0\"], [\"Content-Type\", [\"text/plain\", {\"charset\": \"UTF-8\"}]], [\"Content-Transfer-Encoding\", [\"7bit\", {}]], [\"X-Mailgun-Sid\", \"#{x_mailgun_sid}\"], [\"Sender\", \"#{from}\"]]"
     end
     
     def signature
