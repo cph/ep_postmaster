@@ -27,7 +27,7 @@ module EpPostmaster
       EpPostmaster.configure { |config| config.bounced_email_handler = handler }
       mock(handler).handle_bounced_email!(anything, anything)
       post "/mailgun/bounced_email", mailgun_posts[:bounced_email]
-      assert_equal "Could not deliver email to doesntexist@test.test", ActionMailer::Base.deliveries.first.subject
+      assert_equal "Failed Delivery to doesntexist@test.test: Original email subject", ActionMailer::Base.deliveries.first.subject
     end
   
   end

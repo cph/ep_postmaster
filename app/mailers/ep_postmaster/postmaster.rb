@@ -4,7 +4,7 @@ module EpPostmaster
 
     def bounced_email(mailgun_post)
       @bounced_email = mailgun_post
-      mail to: mailgun_post.sender, subject: "Could not deliver email to #{mailgun_post.recipient}"
+      mail to: mailgun_post.sender, subject: "Failed Delivery to #{mailgun_post.recipient}: #{mailgun_post.subject}"
     end
   end
 end
