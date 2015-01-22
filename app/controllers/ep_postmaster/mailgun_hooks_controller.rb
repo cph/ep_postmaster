@@ -6,13 +6,11 @@ module EpPostmaster
     
     def bounced_email
       if mailgun_post.bounced_email?
-        Postmaster.bounced_email(mailgun_post).deliver
+        deliver_bounced_email_notification
         call_bounced_email_handler
         render nothing: true, status: 200
       else
-        if respond_to?(:notify_airbrake)
-          notify_airbrake WrongEndpointError.new "Expected a hard bounce error code 5xx (bounced), instead got #{mailgun_post.code} (#{mailgun_post.event})"
-        end
+        notify_airbrake_of_wrong_endpoint("5xx (bounced)")
         render nothing: true, status: 406 # Mailgun won't retry request if it receives a 406
       end
     end
@@ -24,12 +22,26 @@ module EpPostmaster
       render nothing: true, status: :unauthorized unless mailgun_post.authentic?
     end
     
+    def deliver_bounced_email_notification
+      if mailgun_post.sender
+        Postmaster.bounced_email(mailgun_post).deliver
+      else
+        logger.debug "Bounced Email Notification: No sender specified when handling bounced email to #{mailgun_post.recipient}"
+      end
+    end
+    
     def call_bounced_email_handler
       handler = EpPostmaster.configuration.bounced_email_handler
       if handler.respond_to?(:handle_bounced_email!)
         handler.send(:handle_bounced_email!, mailgun_post.recipient, mailgun_post)
       else
         raise RuntimeError, "Expected #{handler} to define a method: handle_bounced_email!"
+      end
+    end
+    
+    def notify_airbrake_of_wrong_endpoint(expected)
+      if respond_to?(:notify_airbrake)
+        notify_airbrake WrongEndpointError.new "Expected error code #{expected}, instead got #{mailgun_post.code} (#{mailgun_post.event})"
       end
     end
     

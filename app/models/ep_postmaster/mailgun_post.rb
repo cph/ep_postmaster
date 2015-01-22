@@ -8,7 +8,7 @@ module EpPostmaster
       @message_id = params["message-id"]
       @x_mailgun_sid = params["X-Mailgun-Sid"]
       @code = params.fetch("code")
-      @message_headers = JSON.parse(params["message-headers"])
+      @message_headers = JSON.parse(params["message-headers"]) rescue {}
       @domain = params["domain"]
       @error = params["error"]
       @event = params["event"]
@@ -48,11 +48,11 @@ module EpPostmaster
     def find_sender
       reply_to = message_headers.select { |header| header[0] == "Reply-To" }.first
       from = message_headers.select { |header| header[0] == "From" }.first
-      (reply_to || from)[1]
+      Array(reply_to || from)[1]
     end
     
     def find_subject
-      message_headers.select { |header| header[0] == "Subject" }.first[1]
+      Array(message_headers.select { |header| header[0] == "Subject" }.first)[1]
     end
   
   end

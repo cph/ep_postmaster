@@ -32,11 +32,19 @@ module EpPostmaster
         mock(@dummy_bounced_email_handler).handle_bounced_email!(anything, anything)
         post "/mailgun/bounced_email", bounced_email_post
       end
+      
+      context "When mailgun posts a bounced email without message-headers" do
+      
+        should "skip sending the failed delivery email but still call the handler" do
+          mock(@dummy_bounced_email_handler).handle_bounced_email!(anything, anything)
+          assert_no_difference "ActionMailer::Base.deliveries.size" do
+            post "/mailgun/bounced_email", bounced_email_post.except("message-headers")
+          end
+        end
+      
+      end
 
     end
-  
-    
-    
   
   private
   
