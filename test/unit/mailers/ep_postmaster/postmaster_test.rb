@@ -6,7 +6,8 @@ module EpPostmaster
     
     context "When sending a bounced email notification, it" do
       setup do
-        @mail = Postmaster.bounced_email(mailgun_post)
+        options = { sender: mailgun_post.sender, recipient: mailgun_post.recipient, error: mailgun_post.error, subject: mailgun_post.subject }
+        @mail = Postmaster.bounced_email(options)
       end
     
       should "mention the bounced email address in the subject" do

@@ -25,15 +25,12 @@ end
 
 To override the mailer view, just create a file at `/views/ep_postmaster/postmaster/bounced_email.txt.erb`
 
-You'll have access to an instance variable named `@bounced_email` which is an instance of `MailgunPost`.
+You'll have access to the following instance variables.
 
-It has the following attributes:
-
-* sender    (The original sender of the email that bounced back)
-* recipient (The original recipient of the email that bounced back)
-* code      (The error code)
-
-(for a full list of attributes received from Mailgun, look at the source of mailgun_post.rb)
+* @sender    (The original sender of the bounced_email)
+* @recipient (The original recipient of the bounced email)
+* @original_subject (The original subject of the bounced email)
+* @error      (The error code)
 
 ### Additional options when a Bounced Email comes in
 

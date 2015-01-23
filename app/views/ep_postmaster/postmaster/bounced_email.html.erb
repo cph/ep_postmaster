@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Failed delivery to <%= @bounced_email.recipient %>: <%= @bounced_email.subject %></title>
+  <title>Failed delivery to <%= @recipient %>: <%= @original_subject %></title>
   <style type="text/css">
     /* Based on The MailChimp Reset INLINE: Yes. */
     /* Client-specific Styles */
@@ -130,17 +130,21 @@
       <tr style="background-color:#fff;">
         <td colspan="3" align="left" style="padding: 1em">
           <p>
-            We were unable to deliver to the following email address: <strong><%= @bounced_email.recipient %></strong>
+            We were unable to deliver to the following email address: <strong><%= @recipient %></strong>
           </p>
-          <p>
-            <h5>Subject: <%= @bounced_email.subject %></h5>
-          </p>
-          <p>
-            <h5>Error:</h5>
-            <code>
-              <%= @bounced_email.error %>
-            </code>
-          </p>
+          <% if @original_subject %>
+            <p>
+              <h5>Subject: <%= @original_subject %></h5>
+            </p>
+          <% end %>
+          <% if @error %>
+            <p>
+              <h5>Error:</h5>
+              <code>
+                <%= @error %>
+              </code>
+            </p>
+          <% end %>
         </td>
       </tr>
       <tr>
