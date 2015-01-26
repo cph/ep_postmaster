@@ -3,13 +3,13 @@ module EpPostmaster
     default from: EpPostmaster.configuration.mailer_sender || "from@example.com"
 
     def bounced_email(options = {})
-      @sender = options.fetch(:sender)
-      @recipient = options.fetch(:recipient)
-      @original_subject = options[:subject]
+      @sender = options.fetch(:original_sender)
+      @recipient = options.fetch(:original_recipient)
+      @subject = options[:original_subject]
       @error =  options[:error]
-      subject = "Failed Delivery to #{@recipient}"
-      subject = "#{subject}: #{@original_subject}" if @original_subject
-      mail to: @sender, subject: subject
+      notification_subject = "Failed Delivery to #{@recipient}"
+      notification_subject = "#{notification_subject}: #{@subject}" if @subject
+      mail to: @sender, subject: notification_subject
     end
   end
 end

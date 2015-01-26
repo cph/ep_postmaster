@@ -6,8 +6,8 @@ task send_bounced_email: :environment do
 end
 
 def options
-  { sender: "automail@test.test",
-    recipient: "doesntexist@test.test",
+  { original_sender: "automail@test.test",
+    original_recipient: "doesntexist@test.test",
     error: "551: Email doesn't exist.",
-    subject: "This is a test subject" }
+    original_subject: "This is a test subject" }
 end

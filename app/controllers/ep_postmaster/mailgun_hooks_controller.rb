@@ -24,7 +24,11 @@ module EpPostmaster
     
     def deliver_bounced_email_notification
       if mailgun_post.sender
-        options = { sender: mailgun_post.sender, recipient: mailgun_post.recipient, error: mailgun_post.error, subject: mailgun_post.subject }
+        options = { 
+          original_sender: mailgun_post.sender, 
+          original_recipient: mailgun_post.recipient, 
+          original_subject: mailgun_post.subject,
+          error: mailgun_post.error }
         Postmaster.bounced_email(options).deliver
       else
         logger.debug "Bounced Email Notification: No sender specified when handling bounced email to #{mailgun_post.recipient}"
