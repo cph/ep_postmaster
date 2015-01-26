@@ -9,7 +9,8 @@ module EpPostmaster
       @error =  options[:error]
       notification_subject = "Failed Delivery to #{@recipient}"
       notification_subject = "#{notification_subject}: #{@subject}" if @subject
-      mail to: @sender, subject: notification_subject
+      from = options.fetch(:from, self.class.default[:from])
+      mail to: @sender, from: from, subject: notification_subject 
     end
   end
 end

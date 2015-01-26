@@ -2,11 +2,11 @@ require 'test_helper'
 
 module EpPostmaster
   class PostmasterTest < ActionMailer::TestCase
-    attr_accessor :mail
+    attr_accessor :mail, :options
     
     context "When sending a bounced email notification, it" do
       setup do
-        options = { original_sender: mailgun_post.sender, original_recipient: mailgun_post.recipient, error: mailgun_post.error, original_subject: mailgun_post.subject }
+        @options = { original_sender: mailgun_post.sender, original_recipient: mailgun_post.recipient, error: mailgun_post.error, original_subject: mailgun_post.subject }
         @mail = Postmaster.bounced_email(options)
       end
     
@@ -16,6 +16,11 @@ module EpPostmaster
     
       should "send the email from the configured mailer_sender" do
         assert_equal ["automail@mydomain.com"], mail.from
+      end
+      
+      should "override the configured mailer_sender with from: option" do
+        mail_with_from_option = Postmaster.bounced_email(options.merge(from: "bot@mydomain.com"))
+        assert_equal ["bot@mydomain.com"], mail_with_from_option.from
       end
     
       should "send the email to the original sender of the bounced email" do
