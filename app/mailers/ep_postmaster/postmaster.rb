@@ -1,5 +1,5 @@
 module EpPostmaster
-  class Postmaster < ActionMailer::Base
+  class Postmaster < ::ActionMailer::Base
     default from: EpPostmaster.configuration.mailer_sender || "from@example.com"
 
     def bounced_email(options = {})
