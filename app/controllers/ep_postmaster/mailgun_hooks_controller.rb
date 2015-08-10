@@ -25,8 +25,11 @@ module EpPostmaster
     def deliver_bounced_email_notification
       if mailgun_post.reply_to
         options = { 
+          original_message: mailgun_post, # <-- should act like a Mail::Message
           reply_to: mailgun_post.reply_to,
-          original_recipient: mailgun_post.recipient, 
+          
+          # REFACTOR: eventually remove these params in favor of original_message
+          original_recipient: mailgun_post.recipient,
           original_subject: mailgun_post.subject,
           error: mailgun_post.error }
         Postmaster.bounced_email(options).deliver
