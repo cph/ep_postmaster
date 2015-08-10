@@ -2,7 +2,7 @@ require "openssl"
 
 module EpPostmaster
   class MailgunPost
-    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token
+    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender
     
     def initialize(params)
       @message_id = params["message-id"]
@@ -15,6 +15,8 @@ module EpPostmaster
       @recipient = params.fetch("recipient")
       @reply_to = find_reply_to
       @subject = find_subject
+      @from = Array(message_headers.select { |header| header[0] == "From" }.first)[1]
+      @sender = Array(message_headers.select { |header| header[0] == "Sender" }.first)[1]
       @signature = params["signature"]
       @timestamp = params["timestamp"]
       @token = params["token"]
