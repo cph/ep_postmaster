@@ -13,13 +13,13 @@ module EpPostmaster
     end
   
     should "get the sender's email address from the message headers' 'Reply-To' field" do
-      assert_equal "sender@test.test", mailgun_post.sender
+      assert_equal "sender@test.test", mailgun_post.reply_to
     end
     
     should "get the sender's email address from the message headers' 'From' field if 'Reply-To' is nil" do
       params = DummyParams.new(from: "automail@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
       no_reply_to = MailgunPost.new(params)
-      assert_equal "automail@test.test", no_reply_to.sender
+      assert_equal "automail@test.test", no_reply_to.reply_to
     end
     
     should "get the subject from the message headers" do

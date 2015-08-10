@@ -23,9 +23,9 @@ module EpPostmaster
     end
     
     def deliver_bounced_email_notification
-      if mailgun_post.sender
+      if mailgun_post.reply_to
         options = { 
-          original_sender: mailgun_post.sender, 
+          reply_to: mailgun_post.reply_to,
           original_recipient: mailgun_post.recipient, 
           original_subject: mailgun_post.subject,
           error: mailgun_post.error }

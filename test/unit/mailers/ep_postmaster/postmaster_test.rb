@@ -6,7 +6,7 @@ module EpPostmaster
     
     context "When sending a bounced email notification, it" do
       setup do
-        @options = { original_sender: mailgun_post.sender, original_recipient: mailgun_post.recipient, error: mailgun_post.error, original_subject: mailgun_post.subject }
+        @options = { original_sender: mailgun_post.reply_to, original_recipient: mailgun_post.recipient, error: mailgun_post.error, original_subject: mailgun_post.subject }
         @mail = Postmaster.bounced_email(options)
       end
     
