@@ -27,7 +27,7 @@ To override the mailer view, just create a file at `/views/ep_postmaster/postmas
 
 You'll have access to the following instance variables.
 
-* @sender    (The original sender of the bounced_email)
+* @to        (The recipient of the bounced email notification)
 * @recipient (The original recipient of the bounced email)
 * @original_subject (The original subject of the bounced email)
 * @error      (The error code)

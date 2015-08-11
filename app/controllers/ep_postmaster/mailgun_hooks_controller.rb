@@ -5,14 +5,13 @@ module EpPostmaster
     before_filter :authenticate_request!, except: :test
     
     def bounced_email
-      if mailgun_post.bounced_email?
-        deliver_bounced_email_notification
-        call_bounced_email_handler
-        render nothing: true, status: 200
-      else
-        notify_airbrake_of_wrong_endpoint("5xx (bounced)")
-        render nothing: true, status: 406 # Mailgun won't retry request if it receives a 406
+      unless mailgun_post.bounced_email? || mailgun_post.dropped_email?
+        raise WrongEndpointError, "Unexpected post from Mailgun (code: #{mailgun_post.code}, event: #{mailgun_post.event})"
       end
+      
+      deliver_bounced_email_notification
+      call_bounced_email_handler
+      render nothing: true, status: 200
     end
     
   private
@@ -23,13 +22,17 @@ module EpPostmaster
     end
     
     def deliver_bounced_email_notification
-      if mailgun_post.sender
+      if mailgun_post.reply_to
         options = { 
-          original_sender: mailgun_post.sender, 
-          original_recipient: mailgun_post.recipient, 
+          original_message: mailgun_post, # <-- should act like a Mail::Message
+          reply_to: mailgun_post.reply_to,
+          
+          # REFACTOR: eventually remove these params in favor of original_message
+          original_recipient: mailgun_post.recipient,
           original_subject: mailgun_post.subject,
           error: mailgun_post.error }
-        Postmaster.bounced_email(options).deliver
+        
+        EpPostmaster.configuration.deliver! Postmaster.bounced_email(options)
       else
         logger.debug "Bounced Email Notification: No sender specified when handling bounced email to #{mailgun_post.recipient}"
       end
@@ -41,12 +44,6 @@ module EpPostmaster
         handler.send(:handle_bounced_email!, mailgun_post.recipient, mailgun_post)
       else
         raise RuntimeError, "Expected #{handler} to define a method: handle_bounced_email!"
-      end
-    end
-    
-    def notify_airbrake_of_wrong_endpoint(expected)
-      if respond_to?(:notify_airbrake)
-        notify_airbrake WrongEndpointError.new "Expected error code #{expected}, instead got #{mailgun_post.code} (#{mailgun_post.event})"
       end
     end
     

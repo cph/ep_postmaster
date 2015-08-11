@@ -1,14 +1,19 @@
 module EpPostmaster
   class Configuration
-    attr_accessor :mailgun_api_key, :mailer_sender
+    attr_accessor :mailgun_api_key, :mailer_sender, :mailer_deliverer
     
     def initialize
       @mailgun_api_key = ""
+      self.mailer_deliverer = ->(message) { message.deliver }
       self.bounced_email_handler = Class.new do
         def self.handle_bounced_email!(*)
           # noop
         end
       end
+    end
+    
+    def deliver!(message)
+      mailer_deliverer.call(message)
     end
     
     def bounced_email_handler=(handler)

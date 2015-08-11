@@ -13,12 +13,10 @@ module EpPostmaster
       assert_response :unauthorized # 401
     end
     
-    should "return a 406 if the status code is not a bounce" do  # When a Mailgun hook points toward the wrong endpoint
-      any_instance_of(MailgunHooksController) do |controller|
-        mock(controller).notify_airbrake(anything) { true }
+    should "raise an exception if the status code is not a bounce" do
+      assert_raises WrongEndpointError do
+        post "mailgun/bounced_email", bounced_email_post.merge({"code" => 250, "event" => "completed"})
       end
-      post "mailgun/bounced_email", bounced_email_post.merge({"code" => 250, "event" => "completed"})
-      assert_response :not_acceptable # 406
     end
     
     context "When passing a class to handle the bounced email, it" do
