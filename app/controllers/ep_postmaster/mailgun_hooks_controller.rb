@@ -47,9 +47,5 @@ module EpPostmaster
       end
     end
     
-    def notify_airbrake_of_wrong_endpoint(expected)
-      Airbrake.notify WrongEndpointError.new "Expected error code #{expected}, instead got #{mailgun_post.code} (#{mailgun_post.event})"
-    end
-    
   end
 end
