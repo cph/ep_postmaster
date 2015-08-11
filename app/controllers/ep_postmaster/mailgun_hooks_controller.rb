@@ -5,14 +5,13 @@ module EpPostmaster
     before_filter :authenticate_request!, except: :test
     
     def bounced_email
-      if mailgun_post.bounced_email?
-        deliver_bounced_email_notification
-        call_bounced_email_handler
-        render nothing: true, status: 200
-      else
-        notify_airbrake_of_wrong_endpoint("5xx (bounced)")
-        render nothing: true, status: 406 # Mailgun won't retry request if it receives a 406
+      unless mailgun_post.bounced_email? || mailgun_post.dropped_email?
+        raise WrongEndpointError, "Unexpected post from Mailgun (code: #{mailgun_post.code}, event: #{mailgun_post.event})"
       end
+      
+      deliver_bounced_email_notification
+      call_bounced_email_handler
+      render nothing: true, status: 200
     end
     
   private
@@ -49,9 +48,7 @@ module EpPostmaster
     end
     
     def notify_airbrake_of_wrong_endpoint(expected)
-      if respond_to?(:notify_airbrake)
-        notify_airbrake WrongEndpointError.new "Expected error code #{expected}, instead got #{mailgun_post.code} (#{mailgun_post.event})"
-      end
+      Airbrake.notify WrongEndpointError.new "Expected error code #{expected}, instead got #{mailgun_post.code} (#{mailgun_post.event})"
     end
     
   end

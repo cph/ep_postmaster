@@ -41,6 +41,10 @@ module EpPostmaster
       /^5\d{2}$/ =~ code
     end
     
+    def dropped_email?
+      event == "dropped"
+    end
+    
     def api_key
       EpPostmaster.configuration.mailgun_api_key
     end
