@@ -7,7 +7,7 @@ module EpPostmaster
     def initialize(params)
       @message_id = params["message-id"]
       @x_mailgun_sid = params["X-Mailgun-Sid"]
-      @code = params.fetch("code")
+      @code = params["code"]
       @message_headers = JSON.parse(params["message-headers"]) rescue {}
       @domain = params["domain"]
       @error = params["error"]

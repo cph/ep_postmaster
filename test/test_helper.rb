@@ -17,13 +17,22 @@ end
 
 # Load test data for posts from Mailgun
 class ActiveSupport::TestCase
-
   attr_accessor :mailgun_posts
   
   setup do
-    @mailgun_posts = {}.tap do |posts| 
-      posts[:bounced_email] = EpPostmaster::DummyParams.new(from: "automail@test.test", reply_to: "sender@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
-    end
+    @mailgun_posts = {
+      bounced_email: EpPostmaster::DummyParams.new(
+        from: "automail@test.test",
+        reply_to: "sender@test.test",
+        to: "doesntexist@test.test",
+        event: :bounced_email,
+        mailgun_api_key: "key-abc123").to_params,
+      dropped_email: EpPostmaster::DummyParams.new(
+        from: "automail@test.test",
+        reply_to: "sender@test.test",
+        to: "doesntexist@test.test",
+        event: :dropped_email,
+        mailgun_api_key: "key-abc123").to_params }
     
     EpPostmaster.configure do |config|
       config.mailgun_api_key = "key-abc123"
