@@ -2,23 +2,24 @@ require "securerandom"
 
 module EpPostmaster
   class DummyParams
-    attr_accessor :__event, :to, :from, :reply_to, :mailgun_api_key, :subject
+    attr_accessor :event, :to, :from, :reply_to, :mailgun_api_key, :subject
     
     class UnknownEvent < ArgumentError; end
     
     MAILGUN_EVENTS = {
-      bounced_email: { event: "bounced", code: "550", error: "550 email address does not exist" }
+      bounced_email: { "event" => "bounced", "code" => "550", "error" => "550 email address does not exist" },
+      dropped_email: { "event" => "dropped" }
     }.freeze
     
     def initialize(options = {})
-      @__event = options.fetch(:event)
+      @event = options.fetch(:event)
       @to = options.fetch(:to)
       @from = options.fetch(:from)
       @reply_to = options[:reply_to]
       @mailgun_api_key = options.fetch(:mailgun_api_key)
       @subject = options.fetch(:subject, "Original email subject")
-      unless MAILGUN_EVENTS.has_key?(__event)
-        raise UnknownEvent, "Unknown event: #{__event}"
+      unless MAILGUN_EVENTS.has_key?(event)
+        raise UnknownEvent, "Unknown event: #{event}"
       end
     end
     
@@ -26,17 +27,14 @@ module EpPostmaster
       { "Message-Id" => "<#{message_id}>",
         "X-Mailgun-Sid" => x_mailgun_sid,
         "attachment-count" => "1",
-        "code" => code,
         "domain" => domain,
-        "error" => error,
-        "event" => event,
         "message-headers" => message_headers,
         "message-id" => message_id,
         "recipient" => to,
         "signature" => signature,
         "timestamp" => timestamp,
         "token" => token,
-        "attachment-1" => "ATTACHMENT" }
+        "attachment-1" => "ATTACHMENT" }.merge(MAILGUN_EVENTS[event])
     end
     
   private
@@ -49,20 +47,8 @@ module EpPostmaster
       SecureRandom.base64
     end
     
-    def code
-      MAILGUN_EVENTS[__event][:code]
-    end
-    
     def domain
       from.to_s.split(/@/).last
-    end
-    
-    def error
-      MAILGUN_EVENTS[__event][:error]
-    end
-    
-    def event
-      MAILGUN_EVENTS[__event][:event]
     end
     
     def message_headers
