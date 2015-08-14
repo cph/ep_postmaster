@@ -38,7 +38,7 @@ module EpPostmaster
     end
     
     def bounced_email?
-      /^5\d{2}$/ =~ code
+      /^5[\.\d]+$/ =~ code
     end
     
     def dropped_email?
