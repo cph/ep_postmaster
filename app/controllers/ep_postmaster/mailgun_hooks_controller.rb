@@ -10,7 +10,7 @@ module EpPostmaster
       end
 
       deliver_bounced_email_notification
-      call_bounced_email_handler
+      call_bounced_email_handler if mailgun_post.undeliverable_email?
       render nothing: true, status: 200
     end
 

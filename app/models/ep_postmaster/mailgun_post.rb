@@ -38,6 +38,10 @@ module EpPostmaster
     end
 
     def bounced_email?
+      event == "bounced"
+    end
+
+    def undeliverable_email?
       /^5[\.\d]+$/ =~ code
     end
 
