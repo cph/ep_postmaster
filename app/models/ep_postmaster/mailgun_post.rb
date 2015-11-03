@@ -3,7 +3,7 @@ require "openssl"
 module EpPostmaster
   class MailgunPost
     attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender
-    
+
     def initialize(params)
       @message_id = params["message-id"]
       @x_mailgun_sid = params["X-Mailgun-Sid"]
@@ -36,15 +36,19 @@ module EpPostmaster
       raise ApiKeyMissing if api_key.nil?
       signature == self.class.sign(timestamp, token, api_key)
     end
-    
+
     def bounced_email?
+      event == "bounced"
+    end
+
+    def undeliverable_email?
       /^5[\.\d]+$/ =~ code
     end
-    
+
     def dropped_email?
       event == "dropped"
     end
-    
+
     def api_key
       EpPostmaster.configuration.mailgun_api_key
     end
@@ -56,10 +60,10 @@ module EpPostmaster
       from = message_headers.select { |header| header[0] == "From" }.first
       Array(reply_to || from)[1]
     end
-    
+
     def find_subject
       Array(message_headers.select { |header| header[0] == "Subject" }.first)[1]
     end
-  
+
   end
 end

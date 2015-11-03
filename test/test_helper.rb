@@ -18,7 +18,7 @@ end
 # Load test data for posts from Mailgun
 class ActiveSupport::TestCase
   attr_accessor :mailgun_posts
-  
+
   setup do
     @mailgun_posts = {
       bounced_email: EpPostmaster::DummyParams.new(
@@ -33,11 +33,11 @@ class ActiveSupport::TestCase
         to: "doesntexist@test.test",
         event: :dropped_email,
         mailgun_api_key: "key-abc123").to_params }
-    
+
     EpPostmaster.configure do |config|
       config.mailgun_api_key = "key-abc123"
       config.mailer_sender = "automail@mydomain.com"
     end
   end
-  
+
 end
