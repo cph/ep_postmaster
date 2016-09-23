@@ -11,11 +11,11 @@ module EpPostmaster
 
       from = options.fetch(:from) do
         from = EpPostmaster.configuration.mailer_sender
-        from = from.call(options.fetch(:original_message)) if from.respond_to?(:call)
+        from = catch(:abort) { from.call(options.fetch(:original_message)) } if from.respond_to?(:call)
         from
       end
 
-      mail to: @to, from: from, subject: notification_subject
+      mail to: @to, from: from, subject: notification_subject if from
     end
 
   end

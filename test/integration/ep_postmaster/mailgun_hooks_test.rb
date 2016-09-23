@@ -30,6 +30,18 @@ module EpPostmaster
       end
     end
 
+    context "When passing a block for 'mailer_sender', it" do
+      setup do
+        @mailer_sender_block = -> (*) { throw :abort }
+        EpPostmaster.configure { |config| config.mailer_sender = @mailer_sender_block }
+      end
+
+      should "not send an email if the block throw :abort" do
+        post "/mailgun/bounced_email", bounced_email_post
+        assert_equal 0, ActionMailer::Base.deliveries.count
+      end
+    end
+
     context "When passing a class to handle the bounced email, it" do
       setup do
         @dummy_bounced_email_handler = Class.new { def self.handle_bounced_email!(*); end }
