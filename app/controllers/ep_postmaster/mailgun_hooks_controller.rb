@@ -2,7 +2,7 @@ module EpPostmaster
   class MailgunHooksController < ActionController::Base
     attr_accessor :mailgun_post
 
-    before_filter :authenticate_request!, except: :test
+    before_action :authenticate_request!, except: :test
 
     def bounced_email
       unless mailgun_post.bounced_email? || mailgun_post.dropped_email?
