@@ -4,7 +4,7 @@ module EpPostmaster
 
     def initialize
       @mailgun_api_key = ""
-      self.mailer_deliverer = ->(message) { message.deliver }
+      self.mailer_deliverer = ->(message) { message.deliver_now }
       self.bounced_email_handler = Class.new do
         def self.handle_bounced_email!(*)
           # noop
