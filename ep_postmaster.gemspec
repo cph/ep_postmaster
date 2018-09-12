@@ -23,6 +23,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "shoulda-context"
   s.add_development_dependency "pry"
   s.add_development_dependency "minitest", "~> 5.1"
-  s.add_development_dependency "turn"
+  s.add_development_dependency "minitest-reporters-turn_reporter"
   s.add_development_dependency "letter_opener"
 end
