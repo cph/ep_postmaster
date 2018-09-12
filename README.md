@@ -1,10 +1,12 @@
 ### EP Postmaster
 
+[![Build Status](https://travis-ci.org/cph/ep_postmaster.svg)](https://travis-ci.org/cph/ep_postmaster)
+
 **A drop in solution for handling bounced emails from Mailgun**
 
 Usage: In your `gemfile`
 
-`gem ep_postmaster, github: "/concordia-publishing-house/ep_postmaster", branch: "master"`
+`gem ep_postmaster, github: "/cph/ep_postmaster", branch: "master"`
 
 and mount it in `routes.rb`
 
