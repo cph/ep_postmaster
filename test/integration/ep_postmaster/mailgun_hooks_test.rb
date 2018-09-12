@@ -4,20 +4,20 @@ module EpPostmaster
   class MailgunHooksTest < ActionDispatch::IntegrationTest
 
     should "return a 401 if the signature fails authentication" do
-      post "mailgun/bounced_email", bounced_email_post.merge({"signature" => "gibberish"})
+      post "/mailgun/bounced_email", params: bounced_email_post.merge({"signature" => "gibberish"}), as: :json
       assert_response :unauthorized # 401
     end
 
     context "When we receive notification of a bounced email" do
       should "email a notice to the sender and return a 200" do
-        post "/mailgun/bounced_email", bounced_email_post
+        post "/mailgun/bounced_email", params: bounced_email_post, as: :json
         assert_equal "Failed Delivery to doesntexist@test.test: Original email subject", ActionMailer::Base.deliveries.first.subject
       end
     end
 
     context "When we receive notification of a dropped email" do
       should "email a notice to the sender and return a 200" do
-        post "/mailgun/bounced_email", dropped_email_post
+        post "/mailgun/bounced_email", params: dropped_email_post, as: :json
         assert_equal "Failed Delivery to doesntexist@test.test: Original email subject", ActionMailer::Base.deliveries.first.subject
       end
     end
@@ -25,7 +25,7 @@ module EpPostmaster
     context "When we receive a notification we don't recognize" do
       should "raise an exception" do
         assert_raises WrongEndpointError do
-          post "mailgun/bounced_email", bounced_email_post.merge({"code" => 250, "event" => "completed"})
+          post "/mailgun/bounced_email", params: bounced_email_post.merge({"code" => 250, "event" => "completed"}), as: :json
         end
       end
     end
@@ -37,7 +37,7 @@ module EpPostmaster
       end
 
       should "not send an email if the block throw :abort" do
-        post "/mailgun/bounced_email", bounced_email_post
+        post "/mailgun/bounced_email", params: bounced_email_post, as: :json
         assert_equal 0, ActionMailer::Base.deliveries.count
       end
     end
@@ -50,14 +50,14 @@ module EpPostmaster
 
       should "call handle_bounced_email! on the class" do
         mock(@dummy_bounced_email_handler).handle_bounced_email!(anything, anything)
-        post "/mailgun/bounced_email", bounced_email_post
+        post "/mailgun/bounced_email", params: bounced_email_post, as: :json
       end
 
       context "when mailgun post a temporarily bounced email" do
         should "skip calling the handler, but still send the email" do
           mock(@dummy_bounced_email_handler).handle_bounced_email!.never
           assert_difference "ActionMailer::Base.deliveries.size", +1 do
-            post "/mailgun/bounced_email", bounced_email_post.merge("code" => 450)
+            post "/mailgun/bounced_email", params: bounced_email_post.merge("code" => 450), as: :json
           end
         end
       end
@@ -66,7 +66,7 @@ module EpPostmaster
         should "skip sending the failed delivery email but still call the handler" do
           mock(@dummy_bounced_email_handler).handle_bounced_email!(anything, anything)
           assert_no_difference "ActionMailer::Base.deliveries.size" do
-            post "/mailgun/bounced_email", bounced_email_post.except("message-headers")
+            post "/mailgun/bounced_email", params: bounced_email_post.except("message-headers"), as: :json
           end
         end
       end

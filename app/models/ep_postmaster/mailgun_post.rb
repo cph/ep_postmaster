@@ -42,7 +42,7 @@ module EpPostmaster
     end
 
     def undeliverable_email?
-      /^5[\.\d]+$/ =~ code
+      /^5[\.\d]+$/ =~ code.to_s
     end
 
     def dropped_email?

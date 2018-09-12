@@ -11,14 +11,14 @@ module EpPostmaster
 
       deliver_bounced_email_notification
       call_bounced_email_handler if mailgun_post.undeliverable_email?
-      render nothing: true, status: 200
+      head :no_content
     end
 
   private
 
     def authenticate_request!
       @mailgun_post = MailgunPost.new(params)
-      render nothing: true, status: :unauthorized unless mailgun_post.authentic?
+      head :unauthorized unless mailgun_post.authentic?
     end
 
     def deliver_bounced_email_notification
