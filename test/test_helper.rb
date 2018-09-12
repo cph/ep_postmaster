@@ -7,7 +7,14 @@ require File.expand_path("../../lib/ep_postmaster/dummy_params.rb",  __FILE__)
 require "rr"
 require "pry"
 require "shoulda/context"
-require "turn"
+require "minitest/reporters/turn_reporter"
+
+if ENV["CI"] == "true"
+  MiniTest::Reporters.use! [ Minitest::Reporters::TurnReporter.new, MiniTest::Reporters::JUnitReporter.new ]
+else
+  MiniTest::Reporters.use! Minitest::Reporters::TurnReporter.new
+end
+
 Rails.backtrace_cleaner.remove_silencers!
 
 # Load fixtures from the engine
