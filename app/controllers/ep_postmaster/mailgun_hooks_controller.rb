@@ -5,9 +5,12 @@ module EpPostmaster
     before_action :authenticate_request!, except: :test
 
     def bounced_email
-      unless mailgun_post.bounced_email? || mailgun_post.dropped_email?
+      unless mailgun_post.valid_event?
         raise WrongEndpointError, "Unexpected post from Mailgun (code: #{mailgun_post.code}, event: #{mailgun_post.event})"
       end
+
+      # Try and get Mailgun to resend POST
+      head :unprocessable_entity unless event_data?
 
       deliver_bounced_email_notification
       call_bounced_email_handler if mailgun_post.undeliverable_email?
@@ -21,6 +24,10 @@ module EpPostmaster
       head :unauthorized unless mailgun_post.authentic?
     end
 
+    def event_data?
+      !params["event-data"].nil?
+    end
+
     def deliver_bounced_email_notification
       if mailgun_post.reply_to
         options = {
@@ -30,7 +37,8 @@ module EpPostmaster
           # REFACTOR: eventually remove these params in favor of original_message
           original_recipient: mailgun_post.recipient,
           original_subject: mailgun_post.subject,
-          error: mailgun_post.error }
+          error: EpPostmaster::SMTPError.normalize(mailgun_post.code, mailgun_post.error, mailgun_post.recipient)
+        }
 
         EpPostmaster.configuration.deliver! Postmaster.bounced_email(options)
       else
