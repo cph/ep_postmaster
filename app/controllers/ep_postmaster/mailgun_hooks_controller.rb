@@ -37,7 +37,7 @@ module EpPostmaster
           # REFACTOR: eventually remove these params in favor of original_message
           original_recipient: mailgun_post.recipient,
           original_subject: mailgun_post.subject,
-          error: EpPostmaster::SMTPError.normalize(mailgun_post.code, mailgun_post.error, mailgun_post.recipient)
+          error: EpPostmaster::SmtpError.normalize(mailgun_post.code, mailgun_post.error, mailgun_post.recipient)
         }
 
         EpPostmaster.configuration.deliver! Postmaster.bounced_email(options)

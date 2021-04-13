@@ -1,5 +1,5 @@
 module EpPostmaster
-  class SMTPError
+  class SmtpError
 
     SMTP_ERROR_MESSAGE_ROLLUP = [
       "The email address is invalid or there is an issue with the recipients mailbox",
