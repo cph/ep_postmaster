@@ -25,7 +25,10 @@ module EpPostmaster
     context "When we receive a notification we don't recognize" do
       should "raise an exception" do
         assert_raises WrongEndpointError do
-          post "/mailgun/bounced_email", params: bounced_email_post.merge({"code" => 250, "event" => "completed"}), as: :json
+          bounced_email = bounced_email_post
+          bounced_email["event-data"]["delivery-status"]["code"] = "250"
+          bounced_email["event-data"]["event"] = "completed"
+          post "/mailgun/bounced_email", params: bounced_email, as: :json
         end
       end
     end
@@ -57,7 +60,9 @@ module EpPostmaster
         should "skip calling the handler, but still send the email" do
           mock(@dummy_bounced_email_handler).handle_bounced_email!.never
           assert_difference "ActionMailer::Base.deliveries.size", +1 do
-            post "/mailgun/bounced_email", params: bounced_email_post.merge("code" => 450), as: :json
+            bounced_email = bounced_email_post
+            bounced_email["event-data"]["delivery-status"]["code"] = "450"
+            post "/mailgun/bounced_email", params: bounced_email, as: :json
           end
         end
       end
@@ -65,8 +70,11 @@ module EpPostmaster
       context "When mailgun posts a bounced email without message-headers" do
         should "skip sending the failed delivery email but still call the handler" do
           mock(@dummy_bounced_email_handler).handle_bounced_email!(anything, anything)
+          bounced_email = bounced_email_post
+          bounced_email["event-data"]["message"] = {}
+          bounced_email["event-data"]["envelope"] = {}
           assert_no_difference "ActionMailer::Base.deliveries.size" do
-            post "/mailgun/bounced_email", params: bounced_email_post.except("message-headers"), as: :json
+            post "/mailgun/bounced_email", params: bounced_email, as: :json
           end
         end
       end
@@ -75,11 +83,11 @@ module EpPostmaster
   private
 
     def bounced_email_post
-      mailgun_posts[:bounced_email]
+      mailgun_posts[:bounced_email].deep_dup
     end
 
     def dropped_email_post
-      mailgun_posts[:dropped_email]
+      mailgun_posts[:dropped_email].deep_dup
     end
 
   end

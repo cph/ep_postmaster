@@ -7,8 +7,8 @@ module EpPostmaster
     class UnknownEvent < ArgumentError; end
 
     MAILGUN_EVENTS = {
-      bounced_email: { "event" => "bounced", "code" => "550", "error" => "550 email address does not exist" },
-      dropped_email: { "event" => "dropped" }
+      bounced_email: { "event" => "failed", "reason" => "bounced", "delivery-status" => {"code" => "550", "error" => "550 email address does not exist" }},
+      dropped_email: { "event" => "failed", "reason" => "dropped", "delivery-status" => {} }
     }.freeze
 
     def initialize(options = {})
@@ -24,36 +24,49 @@ module EpPostmaster
     end
 
     def to_params
-      { "Message-Id" => "<#{message_id}>",
-        "X-Mailgun-Sid" => x_mailgun_sid,
-        "attachment-count" => "1",
-        "domain" => domain,
-        "message-headers" => message_headers,
-        "message-id" => message_id,
-        "recipient" => to,
-        "signature" => signature,
-        "timestamp" => timestamp,
-        "token" => token,
-        "attachment-1" => "ATTACHMENT" }.merge(MAILGUN_EVENTS[event])
+      webhook_params = { "event-data" => {
+          "Message-Id" => "<#{message_id}>",
+          "attachment-count" => "1",
+          "message" => message_fields,
+          "envelope" => envelope_fields,
+          "recipient" => to,
+        }.merge(MAILGUN_EVENTS[event])
+      }
+
+      webhook_params.merge!({
+          "signature" => {
+            "signature" => signature,
+            "timestamp" => timestamp,
+            "token" => token
+          }
+        })
     end
 
   private
+
+    def domain
+      from.split("@")[-1]
+    end
 
     def message_id
       "#{SecureRandom.hex}@#{domain}"
     end
 
-    def x_mailgun_sid
-      SecureRandom.base64
+    def message_fields
+      message = {}
+      header_fields = {
+          "to" => to,
+          "from" => from,
+          "subject" => subject,
+          "message-id" => message_id
+        }
+      header_fields.merge!({"reply-to" => reply_to}) if reply_to
+      message.merge!({"headers" => header_fields})
+      message.merge!({"attachments" => ["attachment"], "size": 1035})
     end
 
-    def domain
-      from.to_s.split(/@/).last
-    end
-
-    def message_headers
-      reply_to_json = reply_to ? "[\"Reply-To\", \"#{reply_to}\"]," : ""
-      "[[\"Received\", \"from #{domain} by mxa.mailgun.org with ESMTP id 54903636.7fe3701e8650-in2; #{date.httpdate}\"], [\"Date\", \"#{date.httpdate}\"], [\"From\", \"#{from}\"], #{reply_to_json} [\"To\", \"#{to}\"], [\"Message-Id\", \"<#{message_id}>\"], [\"Subject\", \"#{subject}\"], [\"Mime-Version\", \"1.0\"], [\"Content-Type\", [\"text/plain\", {\"charset\": \"UTF-8\"}]], [\"Content-Transfer-Encoding\", [\"7bit\", {}]], [\"X-Mailgun-Sid\", \"#{x_mailgun_sid}\"], [\"Sender\", \"#{from}\"]]"
+    def envelope_fields
+      {"sender" => from, "transport" => "smtp", "targets" => to}
     end
 
     def signature

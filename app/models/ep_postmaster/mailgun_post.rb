@@ -2,24 +2,36 @@ require "openssl"
 
 module EpPostmaster
   class MailgunPost
-    attr_accessor :message_id, :x_mailgun_sid, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender
+
+    VALID_EVENTS = %w(failed rejected).freeze
+
+    attr_accessor :message_id, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
 
     def initialize(params)
-      @message_id = params["message-id"]
-      @x_mailgun_sid = params["X-Mailgun-Sid"]
-      @code = params["code"]
-      @message_headers = JSON.parse(params["message-headers"]) rescue {}
-      @domain = params["domain"]
-      @error = params["error"]
-      @event = params["event"]
-      @recipient = params.fetch("recipient")
-      @reply_to = find_reply_to
-      @subject = find_subject
-      @from = Array(message_headers.select { |header| header[0] == "From" }.first)[1]
-      @sender = Array(message_headers.select { |header| header[0] == "Sender" }.first)[1]
-      @signature = params["signature"]
-      @timestamp = params["timestamp"]
-      @token = params["token"]
+      event_data = params["event-data"] || {}
+      @message_headers = event_data.dig("message","headers") || {}
+      envelope = event_data["envelope"] || {}
+      signature_data = params["signature"] || {}
+      delivery_status = event_data["delivery-status"]
+
+      @message_id = event_data["message-id"]
+      @code = delivery_status["code"].to_s
+      @domain = event_data["domain"]
+      @error = get_error_message(delivery_status)
+      @reason = event_data["reason"]
+      @event = event_data["event"]
+      @recipient = event_data.fetch("recipient")
+      @subject = message_headers["subject"]
+      header_from = message_headers["from"] || nil
+      bracketed_from = header_from ? header_from.match(/(<(?<from>.*)>)/) : nil
+      extracted_from = bracketed_from ? bracketed_from[:from] : header_from
+      @from = extracted_from ? extracted_from.split("@")[0].gsub("+","@") : nil
+      @domain = extracted_from ? extracted_from.split("@")[-1] : nil
+      @sender = header_from
+      @reply_to = message_headers["reply-to"] || from
+      @timestamp = signature_data["timestamp"]
+      @token = signature_data["token"]
+      @signature = signature_data["signature"]
     rescue ActionController::ParameterMissing => e
       raise EpPostmaster::ParameterMissing, e.message
     end
@@ -37,8 +49,12 @@ module EpPostmaster
       signature == self.class.sign(timestamp, token, api_key)
     end
 
+    def valid_event?
+      VALID_EVENTS.include?(event)
+    end
+
     def bounced_email?
-      event == "bounced"
+      reason == "bounced"
     end
 
     def undeliverable_email?
@@ -46,24 +62,19 @@ module EpPostmaster
     end
 
     def dropped_email?
-      event == "dropped"
+      reason == "dropped"
+    end
+
+    def get_error_message(delivery_status)
+      # We might get both fields, but only one should have text
+      message = delivery_status["message"].to_s.strip
+      description = delivery_status["description"].to_s.strip
+
+      message.empty? ? description : message
     end
 
     def api_key
       EpPostmaster.configuration.mailgun_api_key
     end
-
-  private
-
-    def find_reply_to
-      reply_to = message_headers.select { |header| header[0] == "Reply-To" }.first
-      from = message_headers.select { |header| header[0] == "From" }.first
-      Array(reply_to || from)[1]
-    end
-
-    def find_subject
-      Array(message_headers.select { |header| header[0] == "Subject" }.first)[1]
-    end
-
   end
 end
