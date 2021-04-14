@@ -5,7 +5,7 @@ module EpPostmaster
 
     VALID_EVENTS = %w(failed rejected).freeze
 
-    attr_accessor :message_id, :code, :message_headers, :domain, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
+    attr_accessor :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
 
     def initialize(params)
       event_data = params["event-data"] || {}
@@ -16,7 +16,6 @@ module EpPostmaster
 
       @message_id = event_data["message-id"]
       @code = delivery_status["code"].to_s
-      @domain = event_data["domain"]
       @error = get_error_message(delivery_status)
       @reason = event_data["reason"]
       @event = event_data["event"]
@@ -26,7 +25,6 @@ module EpPostmaster
       bracketed_from = header_from ? header_from.match(/(<(?<from>.*)>)/) : nil
       extracted_from = bracketed_from ? bracketed_from[:from] : header_from
       @from = extracted_from ? extracted_from.split("@")[0].gsub("+","@") : nil
-      @domain = extracted_from ? extracted_from.split("@")[-1] : nil
       @sender = header_from
       @reply_to = message_headers["reply-to"] || from
       @timestamp = signature_data["timestamp"]
