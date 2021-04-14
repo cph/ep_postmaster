@@ -17,13 +17,13 @@ module EpPostmaster
     end
 
     should "get the sender's email address from the message headers' 'From' field if 'Reply-To' is nil" do
-      params = DummyParams.new(from: "automail+test.test@dummy.domain", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
+      params = DummyParams.new(from: "automail@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
       no_reply_to = MailgunPost.new(params)
       assert_equal "automail@test.test", no_reply_to.reply_to
     end
 
     should "get the sender's email address within angle brackets from the message headers' 'From' field if 'Reply-To' is nil" do
-      params = DummyParams.new(from: "Automail <automail+test.test@dummy.domain>", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
+      params = DummyParams.new(from: "Automail <automail@test.test>", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
       no_reply_to = MailgunPost.new(params)
       assert_equal "automail@test.test", no_reply_to.reply_to
     end

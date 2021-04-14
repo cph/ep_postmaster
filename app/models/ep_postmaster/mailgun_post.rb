@@ -23,8 +23,7 @@ module EpPostmaster
       @subject = message_headers["subject"]
       header_from = message_headers["from"] || nil
       bracketed_from = header_from ? header_from.match(/(<(?<from>.*)>)/) : nil
-      extracted_from = bracketed_from ? bracketed_from[:from] : header_from
-      @from = extracted_from ? extracted_from.split("@")[0].gsub("+","@") : nil
+      @from = bracketed_from ? bracketed_from[:from] : header_from
       @sender = header_from
       @reply_to = message_headers["reply-to"] || from
       @timestamp = signature_data["timestamp"]
