@@ -22,6 +22,20 @@ module EpPostmaster
       end
     end
 
+    context "When we recieve a failure for sending a bounced email notification" do
+      setup do
+        @dummy_bounced_email_handler = Class.new { def self.handle_bounced_email!(*); end }
+        EpPostmaster.configure { |config| config.bounced_email_handler = @dummy_bounced_email_handler }
+      end
+
+      should "ignore the failure" do
+        mock(@dummy_bounced_email_handler).handle_bounced_email!.never
+        assert_no_difference "ActionMailer::Base.deliveries.size" do
+          post "/mailgun/bounced_email", params: mailgun_posts[:bounced_notification], as: :json
+        end
+      end
+    end
+
     context "When we receive a notification we don't recognize" do
       should "raise an exception" do
         assert_raises WrongEndpointError do

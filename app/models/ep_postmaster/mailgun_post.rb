@@ -62,6 +62,10 @@ module EpPostmaster
       reason == "dropped"
     end
 
+    def bounced_notification?
+      sender.to_s.include?("noreply")
+    end
+
     def get_error_message(delivery_status)
       # We might get both fields, but only one should have text
       message = delivery_status["message"].to_s.strip
