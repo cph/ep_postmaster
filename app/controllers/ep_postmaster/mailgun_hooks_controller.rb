@@ -2,6 +2,8 @@ module EpPostmaster
   class MailgunHooksController < ActionController::Base
     attr_accessor :mailgun_post
 
+    skip_forgery_protection if allow_forgery_protection
+
     before_action :authenticate_request!, except: :test
 
     def bounced_email
