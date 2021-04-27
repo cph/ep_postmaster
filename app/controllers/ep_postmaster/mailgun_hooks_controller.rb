@@ -12,8 +12,11 @@ module EpPostmaster
       # Try and get Mailgun to resend POST
       head :unprocessable_entity unless event_data?
 
-      deliver_bounced_email_notification
-      call_bounced_email_handler if mailgun_post.undeliverable_email?
+      # Can't send to noreply address
+      unless mailgun_post.bounced_notification?
+        deliver_bounced_email_notification
+        call_bounced_email_handler if mailgun_post.undeliverable_email?
+      end
       head :no_content
     end
 

@@ -39,6 +39,11 @@ class ActiveSupport::TestCase
         reply_to: "sender@test.test",
         to: "doesntexist@test.test",
         event: :dropped_email,
+        mailgun_api_key: "key-abc123").to_params,
+      bounced_notification: EpPostmaster::DummyParams.new(
+        from: "noreply@someserver.relay.com",
+        to: "somesender@test.test",
+        event: :bounced_email,
         mailgun_api_key: "key-abc123").to_params }
 
     EpPostmaster.configure do |config|
