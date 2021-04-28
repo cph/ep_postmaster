@@ -2,7 +2,9 @@ module EpPostmaster
   class MailgunHooksController < ActionController::Base
     attr_accessor :mailgun_post
 
-    skip_forgery_protection if allow_forgery_protection
+    # Don't raise an error if we're already not doing
+    # forgery protection
+    skip_forgery_protection raise: false
 
     before_action :authenticate_request!, except: :test
 
