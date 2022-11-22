@@ -25,6 +25,7 @@ module EpPostmaster
 
     def to_params
       webhook_params = { "event-data" => {
+          "storage" => storage_fields,
           "Message-Id" => "<#{message_id}>",
           "attachment-count" => "1",
           "message" => message_fields,
@@ -50,6 +51,10 @@ module EpPostmaster
 
     def message_id
       "#{SecureRandom.hex}@#{domain}"
+    end
+
+    def storage_fields
+      { "url" => "https://storage-us-east4.api.mailgun.net/v3/domains/#{domain}/messages/AwAlBY7jbvwEEi3jydZARqxwooVjhSyeZQ==" }
     end
 
     def message_fields

@@ -53,5 +53,27 @@ module EpPostmaster
       refute mailgun_post.undeliverable_email?
     end
 
+    should "use api_key when mailgun_api_key is not a lambda" do
+      api_key = "key-abc123"
+      EpPostmaster.configure { |config| config.mailgun_api_key= "#{api_key}" }
+      params = DummyParams.new(from: "email+somedomain.com@email.church360.org", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "#{api_key}").to_params
+      bounced_notification = MailgunPost.new(params)
+      assert_equal api_key, bounced_notification.api_key
+    end
+
+    should "use the api_key wnen the mailgun_api_key is a lamdaa" do
+      api_key = "key-pelham123"
+      EpPostmaster.configure { |config| config.mailgun_api_key= ->(message) { "#{api_key}" } }
+      params = DummyParams.new(from: "email+somedomain.com@email.staging.church360.org", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "#{api_key}").to_params
+      bounced_notification = MailgunPost.new(params)
+      assert_equal api_key, bounced_notification.api_key
+    end
+
+    should "use the legacy api key for bounced email for any other domain" do
+      params = DummyParams.new(from: "email+somedomain.com@relay.members.com", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
+      bounced_notification = MailgunPost.new(params)
+      assert_equal EpPostmaster.configuration.mailgun_api_key, bounced_notification.api_key
+    end
+
   end
 end

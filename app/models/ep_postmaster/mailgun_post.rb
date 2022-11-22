@@ -4,10 +4,20 @@ module EpPostmaster
   class MailgunPost
 
     VALID_EVENTS = %w(failed rejected).freeze
+    VALID_DOMAINS = [
+      "relay.360members.com",
+      "relay.staging.360members.com",
+      "relay.360unite.com",
+      "relay.staging.360unite.com",
+      "email.church360.org",
+      "email.staging.church360.org"
+    ].freeze
 
-    attr_accessor :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
+    attr_accessor :storage_url, :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
 
     def initialize(params)
+      storage_data = params["event-data"]["storage"] || {}
+      @storage_url = storage_data["url"]
       event_data = params["event-data"] || {}
       @message_headers = event_data.dig("message","headers") || {}
       envelope = event_data["envelope"] || {}
@@ -39,10 +49,24 @@ module EpPostmaster
       OpenSSL::HMAC.hexdigest(digest, api_key, data)
     end
 
+    def self.unfurl(address)
+    # Transforms local+domain@<mailgun-sending-domain> to local@domain while preserving
+    # a vanilla local@domain address.
+    address_domain = Mail::Address.new(address).domain
+    return address unless VALID_DOMAINS.include?(address_domain)
+
+    address && address.gsub("+", "@")
+      .split("@")
+      .take(2)
+      .join("@")
+    end
+
     # Verifies that the post came from Mailgun
     # Taken from http://documentation.mailgun.com/user_manual.html#webhooks
     def authentic?
+      # We need two keys, one for legacy, one for communications module
       raise ApiKeyMissing if api_key.nil?
+
       signature == self.class.sign(timestamp, token, api_key)
     end
 
@@ -75,7 +99,9 @@ module EpPostmaster
     end
 
     def api_key
-      EpPostmaster.configuration.mailgun_api_key
+      key = EpPostmaster.configuration.mailgun_api_key
+      key = catch(:abort) { key.call(self) } if key.respond_to?(:call)
+      key
     end
   end
 end
