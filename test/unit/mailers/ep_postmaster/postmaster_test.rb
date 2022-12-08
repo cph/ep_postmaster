@@ -45,7 +45,7 @@ module EpPostmaster
   private
 
     def mailgun_post
-      MailgunPost.new(mailgun_posts[:bounced_email])
+      MailgunPost.new(mailgun_posts[:bounced_email], "dummy")
     end
 
   end

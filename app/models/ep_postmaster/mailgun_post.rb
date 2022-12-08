@@ -13,9 +13,10 @@ module EpPostmaster
       "email.staging.church360.org"
     ].freeze
 
-    attr_accessor :storage_url, :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason
+    attr_accessor :storage_url, :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason, :webhook_url
 
-    def initialize(params)
+    def initialize(params, webhook_url)
+      @webhook_url = webhook_url
       storage_data = params["event-data"]["storage"] || {}
       @storage_url = storage_data["url"]
       event_data = params["event-data"] || {}
@@ -100,7 +101,7 @@ module EpPostmaster
 
     def api_key
       key = EpPostmaster.configuration.mailgun_api_key
-      key = catch(:abort) { key.call(self) } if key.respond_to?(:call)
+      key = catch(:abort) { key.call(self, webhook_url) } if key.respond_to?(:call)
       key
     end
   end

@@ -5,7 +5,7 @@ module EpPostmaster
     attr_accessor :mailgun_post
 
     setup do
-      @mailgun_post = MailgunPost.new(mailgun_posts[:bounced_email])
+      @mailgun_post = MailgunPost.new(mailgun_posts[:bounced_email], "dummy")
     end
 
     should "get the recipient's email address" do
@@ -18,13 +18,13 @@ module EpPostmaster
 
     should "get the sender's email address from the message headers' 'From' field if 'Reply-To' is nil" do
       params = DummyParams.new(from: "automail@test.test", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
-      no_reply_to = MailgunPost.new(params)
+      no_reply_to = MailgunPost.new(params, "dummy")
       assert_equal "automail@test.test", no_reply_to.reply_to
     end
 
     should "get the sender's email address within angle brackets from the message headers' 'From' field if 'Reply-To' is nil" do
       params = DummyParams.new(from: "Automail <automail@test.test>", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
-      no_reply_to = MailgunPost.new(params)
+      no_reply_to = MailgunPost.new(params, "dummy")
       assert_equal "automail@test.test", no_reply_to.reply_to
     end
 
@@ -57,21 +57,21 @@ module EpPostmaster
       api_key = "key-abc123"
       EpPostmaster.configure { |config| config.mailgun_api_key= "#{api_key}" }
       params = DummyParams.new(from: "email+somedomain.com@email.church360.org", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "#{api_key}").to_params
-      bounced_notification = MailgunPost.new(params)
+      bounced_notification = MailgunPost.new(params, "dummy")
       assert_equal api_key, bounced_notification.api_key
     end
 
     should "use the api_key wnen the mailgun_api_key is a lamdaa" do
       api_key = "key-pelham123"
-      EpPostmaster.configure { |config| config.mailgun_api_key= ->(message) { "#{api_key}" } }
+      EpPostmaster.configure { |config| config.mailgun_api_key= ->(message, webhook_url) { "#{api_key}" } }
       params = DummyParams.new(from: "email+somedomain.com@email.staging.church360.org", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "#{api_key}").to_params
-      bounced_notification = MailgunPost.new(params)
+      bounced_notification = MailgunPost.new(params, "dummy")
       assert_equal api_key, bounced_notification.api_key
     end
 
     should "use the legacy api key for bounced email for any other domain" do
       params = DummyParams.new(from: "email+somedomain.com@relay.members.com", to: "doesntexist@test.test", event: :bounced_email, mailgun_api_key: "key-abc123").to_params
-      bounced_notification = MailgunPost.new(params)
+      bounced_notification = MailgunPost.new(params, "dummy")
       assert_equal EpPostmaster.configuration.mailgun_api_key, bounced_notification.api_key
     end
 
