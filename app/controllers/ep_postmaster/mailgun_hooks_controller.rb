@@ -27,7 +27,7 @@ module EpPostmaster
   private
 
     def authenticate_request!
-      @mailgun_post = MailgunPost.new(params)
+      @mailgun_post = MailgunPost.new(params, request.url)
       head :unauthorized unless mailgun_post.authentic?
     end
 
