@@ -10,7 +10,9 @@ module EpPostmaster
       "relay.360unite.com",
       "relay.staging.360unite.com",
       "email.church360.org",
-      "email.staging.church360.org"
+      "email.staging.church360.org",
+      "360members.com",
+      "360unite.com"
     ].freeze
 
     attr_accessor :storage_url, :message_id, :code, :message_headers, :error, :event, :recipient, :reply_to, :subject, :signature, :timestamp, :token, :from, :sender, :reason, :webhook_url
