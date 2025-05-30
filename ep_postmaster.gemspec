@@ -25,4 +25,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest", "~> 5.1"
   s.add_development_dependency "minitest-reporters-turn_reporter"
   s.add_development_dependency "letter_opener"
+  s.add_development_dependency "base64"
+  s.add_development_dependency "bigdecimal"
+  s.add_development_dependency "mutex_m"
+  s.add_development_dependency "drb"
 end
