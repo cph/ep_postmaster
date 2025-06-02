@@ -10,9 +10,9 @@ require "shoulda/context"
 require "minitest/reporters/turn_reporter"
 
 if ENV["CI"] == "true"
-  MiniTest::Reporters.use! [ Minitest::Reporters::TurnReporter.new, MiniTest::Reporters::JUnitReporter.new ]
+  Minitest::Reporters.use! [ Minitest::Reporters::TurnReporter.new, Minitest::Reporters::JUnitReporter.new ]
 else
-  MiniTest::Reporters.use! Minitest::Reporters::TurnReporter.new
+  Minitest::Reporters.use! Minitest::Reporters::TurnReporter.new
 end
 
 Rails.backtrace_cleaner.remove_silencers!
