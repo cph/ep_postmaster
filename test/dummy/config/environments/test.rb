@@ -36,4 +36,7 @@ Dummy::Application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # Don't render exception templates for rescuable exceptions; raise for all exceptions.
+  config.action_dispatch.show_exceptions = :none
 end
