@@ -2,7 +2,10 @@ module EpPostmaster
   class Postmaster < ::ActionMailer::Base
 
     def bounced_email(options = {})
-      @to = MailgunPost.unfurl(options.fetch(:original_sender) { options.fetch(:reply_to) })
+      @to = Array.wrap(MailgunPost.unfurl(options.fetch(:original_sender) { options.fetch(:reply_to) }))
+      @to -= EpPostmaster.configuration.ignored_bounce_emails
+      return if @to.empty?
+
       @recipient = options.fetch(:original_recipient)
       @subject = options[:original_subject]
       @error =  options[:error]

@@ -40,6 +40,15 @@ module EpPostmaster
       should "say something in the body of the email" do
         assert_match "unable to deliver", mail.body.encoded
       end
+
+      should "not send anything when the original sender is in a list of ignored addresses" do
+        EpPostmaster.configure { |config| config.ignored_bounce_emails = [ "sender@test.test" ] }
+        message = Postmaster.bounced_email(options).message
+        EpPostmaster.configure { |config| config.ignored_bounce_emails = [] }
+
+        assert message.is_a?(ActionMailer::Base::NullMail)
+
+      end
     end
 
   private
